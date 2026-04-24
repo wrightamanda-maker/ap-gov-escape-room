@@ -1,0 +1,340 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#1a1a1a;--paper:#f5f0e8;--red:#c0392b;--gold:#c9800a;--green:#2d6a4f;--blue:#1a5276;
+    --fade:#7f8c8d;--border:#b8b0a0;
+  }
+  body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;min-height:400px}
+  #app{max-width:680px;margin:0 auto;padding:1rem}
+
+  /* NEWSPAPER MASTHEAD */
+  .masthead{text-align:center;border-bottom:3px double var(--ink);padding-bottom:0.75rem;margin-bottom:1rem}
+  .masthead h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;line-height:1}
+  .masthead p{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fade);margin-top:2px}
+
+  /* PROGRESS BAR */
+  .progress-bar{display:flex;gap:4px;margin-bottom:1rem;align-items:center}
+  .pb-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--fade);white-space:nowrap;margin-right:4px}
+  .pb-step{flex:1;height:6px;background:#ddd;border-radius:2px;transition:background 0.4s}
+  .pb-step.done{background:var(--green)}
+  .pb-step.active{background:var(--gold)}
+
+  /* ROOM CARD */
+  .room{background:white;border:1px solid var(--border);border-radius:4px;overflow:hidden;animation:fadeIn 0.4s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .room-header{background:var(--ink);color:var(--paper);padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center}
+  .room-header h2{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px}
+  .room-number{font-family:'IBM Plex Mono',monospace;font-size:11px;opacity:0.6}
+  .room-body{padding:1rem}
+
+  /* CLUE / SCENARIO BOX */
+  .clue-box{background:var(--paper);border-left:3px solid var(--gold);padding:0.75rem 1rem;margin-bottom:1rem;font-size:13px}
+  .clue-box strong{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+
+  /* QUESTION */
+  .question-text{font-size:15px;font-weight:500;margin-bottom:1rem;line-height:1.5}
+
+  /* OPTIONS */
+  .options{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+  .opt-btn{background:white;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.9rem;text-align:left;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;transition:all 0.15s;position:relative;padding-left:2.5rem}
+  .opt-btn::before{content:attr(data-letter);position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--fade)}
+  .opt-btn:hover{border-color:var(--gold);background:#fffdf7}
+  .opt-btn.correct{border-color:var(--green);background:#f0fff4;color:var(--green)}
+  .opt-btn.correct::before{color:var(--green)}
+  .opt-btn.wrong{border-color:var(--red);background:#fff5f5;color:var(--red)}
+  .opt-btn.wrong::before{color:var(--red)}
+  .opt-btn:disabled{cursor:not-allowed}
+
+  /* FEEDBACK */
+  .feedback{padding:0.75rem 1rem;border-radius:3px;font-size:13px;margin-bottom:1rem;display:none}
+  .feedback.correct-fb{background:#f0fff4;border:1px solid var(--green);color:#1a5c2e}
+  .feedback.wrong-fb{background:#fff5f5;border:1px solid var(--red);color:var(--red)}
+  .feedback.show{display:block;animation:fadeIn 0.3s ease}
+  .feedback strong{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+
+  /* BUTTONS */
+  .btn-next{background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:0.65rem 1.5rem;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;display:none}
+  .btn-next:hover{background:#333}
+  .btn-next.show{display:inline-block}
+
+  /* CLUE REVEAL */
+  .clue-unlock{background:var(--gold);color:white;border-radius:3px;padding:0.75rem 1rem;font-size:13px;margin-top:1rem;display:none}
+  .clue-unlock strong{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .clue-unlock.show{display:block;animation:fadeIn 0.5s ease}
+
+  /* SCORE */
+  .score-display{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fade);text-align:right;margin-bottom:0.5rem}
+
+  /* WIN SCREEN */
+  .win-screen{text-align:center;padding:2rem 1rem}
+  .win-screen h2{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:4px;color:var(--green)}
+  .win-screen .final-score{font-family:'IBM Plex Mono',monospace;font-size:24px;color:var(--gold);margin:0.5rem 0}
+  .win-screen p{font-size:13px;color:var(--fade);margin-top:0.5rem}
+  .badge-grid{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin:1rem 0}
+  .badge{background:var(--ink);color:var(--paper);border-radius:3px;padding:4px 10px;font-family:'IBM Plex Mono',monospace;font-size:11px}
+  .badge.earned{background:var(--green)}
+  .badge.missed{background:#ccc;color:#666}
+  .replay-btn{background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:0.65rem 1.5rem;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:1rem}
+  .replay-btn:hover{background:#333}
+
+  /* MINI MAP */
+  .mini-map{display:flex;gap:4px;margin-bottom:0.75rem}
+  .map-room{flex:1;height:28px;display:flex;align-items:center;justify-content:center;border-radius:3px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:10px;background:#eee;color:var(--fade);transition:all 0.3s}
+  .map-room.active{background:var(--gold);color:white;border-color:var(--gold);font-weight:600}
+  .map-room.cleared{background:var(--green);color:white;border-color:var(--green)}
+</style>
+
+<h2 class="sr-only">AP Gov Media Escape Room — a 7-room interactive quiz game covering topics from Topic 5.12 Media and Topic 13: Changing Media</h2>
+
+<div id="app">
+  <div class="masthead">
+    <h1>THE FOURTH ESTATE</h1>
+    <p>AP Government &bull; Media Escape Room &bull; 7 Rooms to Clear</p>
+  </div>
+
+  <div class="mini-map" id="miniMap"></div>
+  <div class="score-display" id="scoreDisplay">Score: 0 pts</div>
+  <div class="progress-bar"><span class="pb-label">Progress</span><div id="pbSteps"></div></div>
+
+  <div id="roomContainer"></div>
+</div>
+
+<script>
+const ROOMS = [
+  {
+    title: "The Press Room",
+    number: "Room 1 of 7",
+    clue: "Dispatch | Breaking story discovered in the archives",
+    clueText: "You enter a dusty press room. Old newspapers cover the walls. A locked cabinet bears the sign: 'FOURTH BRANCH'. To find the combination, you must prove you understand the media's role in democracy.",
+    unlockedClue: "The cabinet springs open. Inside: a torn page reading... 'Find the man who set the agenda — Lippmann's heir.' Next room: The Editor's Office.",
+    question: "The media is often called the 'Fourth Branch of Government' because it:",
+    options: [
+      "Is directly elected by the American public",
+      "Exposes corruption, holds officials accountable, and acts as a watchdog on government",
+      "Has the power to veto legislation passed by Congress",
+      "Is funded by the federal government to inform the public"
+    ],
+    correct: 1,
+    explanation: "The media earns the 'Fourth Branch' nickname by acting as a watchdog — investigative journalists expose corruption, wrongdoing, and incompetence, holding the government accountable outside the formal three branches."
+  },
+  {
+    title: "The Editor's Office",
+    number: "Room 2 of 7",
+    clue: "Memo | To: All Staff — Subject: AGENDA",
+    clueText: "The editor's desk is covered in story pitches. A whiteboard reads: 'WE DON'T TELL THEM WHAT TO THINK — WE TELL THEM WHAT TO THINK ABOUT.' A combination lock guards the filing cabinet.",
+    unlockedClue: "Key found inside: a sticky note — 'The real story isn't who's winning. It's who's counting the horses.' Proceed to The Broadcast Suite.",
+    question: "Agenda setting refers to the media's ability to:",
+    options: [
+      "Tell citizens exactly what political opinions to hold",
+      "Determine which political party wins each election",
+      "Shape which topics and issues the public considers most important",
+      "Control the voting process by broadcasting election results early"
+    ],
+    correct: 2,
+    explanation: "Agenda setting is the media's power to influence which issues become prominent in public consciousness. By choosing which stories to cover, the media shapes what people think ABOUT — not necessarily what they think."
+  },
+  {
+    title: "The Broadcast Suite",
+    number: "Room 3 of 7",
+    clue: "Teleprompter | Script loaded — breaking: 'HORSE RACE UPDATE'",
+    clueText: "Banks of monitors flash polling numbers. Every screen shows '48% vs 44% — WHO WILL WIN?' A producer shouts: 'Stop covering policy — give me drama!' The exit code is hidden in understanding what's wrong here.",
+    unlockedClue: "Password accepted: POLLING MOMENTUM. On the screen flickers: 'Some viewers only see what they want to see. Find the bubble.' Head to The Algorithm Lab.",
+    question: "Horse race journalism is problematic because it:",
+    options: [
+      "Gives too much coverage to third-party candidates",
+      "Focuses on poll standings and momentum rather than candidates' policies and qualifications",
+      "Reports election results before all votes are counted",
+      "Interviews too many political scientists instead of voters"
+    ],
+    correct: 1,
+    explanation: "Horse race journalism reduces elections to a competition about who's 'ahead' — covering poll numbers, fundraising totals, and debate winners — instead of the candidates' actual policy positions, qualifications, and governing ability. This is EK 5.12.A.2."
+  },
+  {
+    title: "The Algorithm Lab",
+    number: "Room 4 of 7",
+    clue: "Server Log | User 7,824 — Feed customized. Exposure: 0 opposing views.",
+    clueText: "Rows of servers hum. On one screen: a social media feed showing the same viewpoint repeated endlessly. A scientist's notebook reads: 'Subject believes only what the algorithm shows. Confirmation rate: 98%.' What IS this phenomenon?",
+    unlockedClue: "ECHO CHAMBER — access granted. A USB drive labeled 'Narrowcast Instructions — 1980s' lies on the desk. Take it to The Cable News Archive.",
+    question: "An echo chamber in the context of social media refers to:",
+    options: [
+      "A studio designed for perfect audio recording of news broadcasts",
+      "When multiple news organizations report on the same story simultaneously",
+      "An environment where algorithms show users only content matching their existing beliefs, reinforcing those views",
+      "The legal requirement for broadcasters to present both sides of issues"
+    ],
+    correct: 2,
+    explanation: "Echo chambers occur when social media algorithms and selective exposure show users only content that confirms their pre-existing beliefs, creating ideological bubbles. This prevents citizens from encountering alternative perspectives, contributing to political polarization."
+  },
+  {
+    title: "The Cable News Archive",
+    number: "Room 5 of 7",
+    clue: "VHS Tape | Label: 'CNN LAUNCH 1980 — THE FIRST NARROWCAST'",
+    clueText: "Shelves of VHS tapes span the room. 1980s CNN. 1990s Fox News. You find a chart showing media evolution. A padlock reads: 'What changed when cable arrived?' The USB from the Algorithm Lab clicks into a computer — it holds a clue.",
+    unlockedClue: "File unlocked: 'The Muckrakers knew — dig deep. Find the watchdog who brought down the president.' Advance to The Investigative Desk.",
+    question: "Narrowcasting, which emerged with cable news networks in the 1980s–1990s, means:",
+    options: [
+      "Broadcasting news to a very small local community only",
+      "Targeting content to specific ideological audiences rather than the general public",
+      "Reducing the length of news programs to fit shorter attention spans",
+      "Using narrow camera angles for dramatic news presentation"
+    ],
+    correct: 1,
+    explanation: "Narrowcasting is the practice of tailoring media content to specific ideological or demographic audiences. Networks like Fox News and MSNBC became dominant by targeting viewers with particular political leanings — the opposite of traditional broadcasting which aimed at the widest possible audience."
+  },
+  {
+    title: "The Investigative Desk",
+    number: "Room 6 of 7",
+    clue: "Classified Folder | 'WATERGATE — Eyes Only'",
+    clueText: "Papers everywhere. A typewriter. Photos of a White House. A note: 'Woodward and Bernstein broke this story. Their reporting forced a president to resign. This is the watchdog in action.' The final lock requires you to identify what this illustrates about the media's role.",
+    unlockedClue: "WATCHDOG CONFIRMED. One door remains. A sign reads: 'The Changing Media — can you explain what's happening to democracy?' Enter the Final Chamber.",
+    question: "The Watergate scandal, exposed by Washington Post journalists, best illustrates which media function?",
+    options: [
+      "Agenda setting — Watergate became the most important issue because the media covered it",
+      "Horse race journalism — reporters tracked Nixon's approval ratings throughout the scandal",
+      "Investigative journalism / watchdog role — reporters exposed government corruption and held officials accountable",
+      "Narrowcasting — the Post targeted liberal audiences with anti-Nixon coverage"
+    ],
+    correct: 2,
+    explanation: "Watergate is the classic example of the media's watchdog function. Woodward and Bernstein's investigative journalism uncovered the Nixon administration's crimes, ultimately leading to Nixon's resignation. This demonstrates EK 5.12.A.1 — the media's role in exposing wrongdoing and holding government accountable."
+  },
+  {
+    title: "The Final Chamber",
+    number: "Room 7 of 7",
+    clue: "Breaking News | DEMOCRACY IN CRISIS — or opportunity?",
+    clueText: "The final chamber holds a massive screen cycling through headlines: partisan sites, social media posts, conspiracy theories, but also citizen journalists exposing injustice. One question stands between you and freedom.",
+    unlockedClue: "YOU ESCAPED.",
+    question: "According to AP Gov content on changing media, one significant concern about partisan news sites and social media echo chambers is that they:",
+    options: [
+      "Make it impossible for any political news to reach average citizens",
+      "Can contribute to political polarization, the spread of misinformation, and reduced civic engagement",
+      "Ensure citizens are more informed than ever before due to unlimited information access",
+      "Have caused the complete elimination of traditional broadcast news networks"
+    ],
+    correct: 1,
+    explanation: "While the internet provides more access to information, partisan media and echo chambers contribute to political polarization, misinformation, and a breakdown of shared facts needed for democratic debate. Many Americans are misinformed despite having access to vast amounts of news — because they consume it without evaluating source credibility (EK 5.13.A.2–A.3)."
+  }
+];
+
+let currentRoom = 0;
+let score = 0;
+let answered = false;
+let earnedBadges = [];
+const BADGES = ["Press Pass","Agenda Setter","Fact Checker","Algorithm Decoder","Media Critic","Watchdog","Democracy Defender"];
+const PTS_PER = 100;
+
+function renderMiniMap(){
+  const mm = document.getElementById('miniMap');
+  mm.innerHTML = ROOMS.map((r,i)=>{
+    const cls = i < currentRoom ? 'cleared' : i===currentRoom ? 'active' : '';
+    return `<div class="map-room ${cls}">${i+1}</div>`;
+  }).join('');
+}
+
+function renderProgressBar(){
+  const pb = document.getElementById('pbSteps');
+  pb.innerHTML = '';
+  pb.style.cssText = 'display:flex;gap:4px;flex:1';
+  ROOMS.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className = 'pb-step ' + (i < currentRoom ? 'done' : i===currentRoom ? 'active' : '');
+    pb.appendChild(d);
+  });
+}
+
+function renderRoom(){
+  if(currentRoom >= ROOMS.length){renderWin();return;}
+  answered = false;
+  const r = ROOMS[currentRoom];
+  renderMiniMap();
+  renderProgressBar();
+  document.getElementById('scoreDisplay').textContent = `Score: ${score} pts`;
+
+  document.getElementById('roomContainer').innerHTML = `
+    <div class="room">
+      <div class="room-header">
+        <h2>${r.title}</h2>
+        <span class="room-number">${r.number}</span>
+      </div>
+      <div class="room-body">
+        <div class="clue-box"><strong>${r.clue}</strong>${r.clueText}</div>
+        <div class="question-text">${r.question}</div>
+        <div class="options">
+          ${r.options.map((o,i)=>`<button class="opt-btn" data-letter="${['A','B','C','D'][i]}" data-idx="${i}" onclick="choose(${i})">${o}</button>`).join('')}
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="clue-unlock" id="clueUnlock"><strong>Clue Unlocked</strong>${r.unlockedClue}</div>
+        <button class="btn-next" id="btnNext" onclick="nextRoom()">Next Room &rarr;</button>
+      </div>
+    </div>`;
+}
+
+function choose(idx){
+  if(answered) return;
+  answered = true;
+  const r = ROOMS[currentRoom];
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b=>b.disabled=true);
+
+  const fb = document.getElementById('feedback');
+  const cu = document.getElementById('clueUnlock');
+  const bn = document.getElementById('btnNext');
+
+  if(idx === r.correct){
+    btns[idx].classList.add('correct');
+    score += PTS_PER;
+    earnedBadges.push(currentRoom);
+    fb.className = 'feedback correct-fb show';
+    fb.innerHTML = `<strong>Correct — Clue unlocked!</strong>${r.explanation}`;
+    cu.className = 'clue-unlock show';
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[r.correct].classList.add('correct');
+    fb.className = 'feedback wrong-fb show';
+    fb.innerHTML = `<strong>Incorrect</strong>${r.explanation}`;
+  }
+  document.getElementById('scoreDisplay').textContent = `Score: ${score} pts`;
+  bn.classList.add('show');
+}
+
+function nextRoom(){
+  currentRoom++;
+  renderRoom();
+}
+
+function renderWin(){
+  document.getElementById('scoreDisplay').textContent = `Final Score: ${score} pts`;
+  const pct = Math.round(score / (ROOMS.length * PTS_PER) * 100);
+  let grade = pct === 100 ? '5 on the AP Exam' : pct >= 80 ? '4 on the AP Exam' : pct >= 60 ? '3 on the AP Exam' : pct >= 40 ? '2 on the AP Exam' : '1 on the AP Exam — study up!';
+  document.getElementById('miniMap').innerHTML = '';
+  document.getElementById('pbSteps').parentElement.style.display='none';
+
+  document.getElementById('roomContainer').innerHTML = `
+    <div class="room">
+      <div class="room-body">
+        <div class="win-screen">
+          <h2>You Escaped!</h2>
+          <div class="final-score">${score} / ${ROOMS.length * PTS_PER} pts</div>
+          <p>Predicted score: <strong>${grade}</strong></p>
+          <p style="margin-top:0.75rem;font-size:12px;color:var(--fade)">Badges earned (tap a badge to see what it covers)</p>
+          <div class="badge-grid">
+            ${BADGES.map((b,i)=>`<div class="badge ${earnedBadges.includes(i)?'earned':'missed'}" title="${earnedBadges.includes(i)?'Earned!':'Missed'}">${b}</div>`).join('')}
+          </div>
+          <p style="font-size:12px;color:var(--fade);margin-top:0.5rem">
+            ${pct===100?'Perfect score — you are ready for the AP Exam!':pct>=80?'Great work! Review any missed rooms before the exam.':'Keep studying Topics 5.12 and 5.13. You can do this!'}
+          </p>
+          <button class="replay-btn" onclick="restart()">Play Again &uarr;</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function restart(){
+  currentRoom=0;score=0;answered=false;earnedBadges=[];
+  document.getElementById('pbSteps').parentElement.style.display='flex';
+  renderRoom();
+}
+
+renderRoom();
+</script>
